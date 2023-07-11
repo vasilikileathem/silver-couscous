@@ -1,0 +1,24 @@
+def get_parquet_schema(project, dataset, table):
+    project = project
+    dataset_id = dataset
+    table_id = table
+    data_type_mapping = {
+        'STRING': pyarrow.string(),
+        'BYTES': pyarrow.string(),
+        'INTEGER': pyarrow.int64(),
+        'FLOAT': pyarrow.float64(),
+        'BOOLEAN': pyarrow.bool_(),
+        'TIMESTAMP': pyarrow.timestamp(unit='s'),
+        'DATE': pyarrow.date64(),
+        'DATETIME': pyarrow.timestamp(unit='s'),
+        # 'ARRAY': pyarrow.list_(),
+        # 'RECORD': pyarrow.dictionary()
+    }
+    client = bigquery.Client(project=project)
+    dataset_ref = client.dataset(dataset_id, project=project)
+    table_ref = dataset_ref.table(table_id)
+    table = client.get_table(table_ref)
+    parquet_schema = pyarrow.schema([])
+    for f in table.schema:
+        parquet_schema = parquet_schema.append(pyarrow.field(f.name, data_type_mapping[f.field_type]))
+    return parquet_schema
